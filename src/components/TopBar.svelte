@@ -1,15 +1,48 @@
 <script>
     import {browser} from "$app/environment";
     import {goto} from "$app/navigation";
+    import {onMount} from 'svelte';
 
-    let userIsLoggedIn = browser && localStorage.getItem("login") && localStorage.getItem("password");
+    let userIsLoggedIn = browser && localStorage.getItem("token");
 
     function logOut() {
-        localStorage.removeItem('login');
-        localStorage.removeItem('password');
+        localStorage.removeItem('token');
         userIsLoggedIn = null
         goto('/');
     }
+
+    onMount(async () => {
+        if (browser && localStorage.getItem("token")) {
+            fetch('http://localhost:8000/api/v1/users/info', {
+                method: 'GET',
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        response.json().then(
+                            data => {
+                                console.log(data);
+                                localStorage.setItem('username', data['username']);
+                            }
+                        )
+                    } else {
+                        // Handle error cases
+                        response.json().then(
+                            data => {
+                                console.error(`Get info failed: `, data);
+                                // alert(`Get info failed`)
+                            }
+                        )
+                    }
+                })
+                .catch(error => {
+                    console.error('An error occurred', error);
+                });
+        }
+    })
+
 
     let showDropdown = false;
 
@@ -25,9 +58,12 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto">
                 {#if userIsLoggedIn}
+                    <li class="nav-item">
+                        <a class="nav-link" href='/videos'>my videos</a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" on:click={toggleDropdown}>
-                            {browser && localStorage.getItem("login")}
+                            {browser && localStorage.getItem("username")}
                         </a>
                         {#if showDropdown}
                             <div class="dropdown-menu dropdown-menu-end show">

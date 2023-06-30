@@ -4,9 +4,9 @@
     import TopBar from '../components/TopBar.svelte';
     import UploadVideo from "../components/UploadVideo.svelte";
 
-    let userIsLoggedIn = browser && localStorage.getItem("login") && localStorage.getItem("password");
-
+    let userIsLoggedIn = browser && localStorage.getItem("token");
 </script>
+
 <TopBar/>
 <div class="container">
     {#if userIsLoggedIn}
